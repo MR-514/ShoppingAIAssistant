@@ -1,12 +1,12 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Heart, ShoppingCart, Share2, Truck, Shield, RotateCcw, Star } from "lucide-react"
+import { ShoppingCart, Star } from "lucide-react"
 import { useCart } from "@/components/cart-provider"
 import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
@@ -188,12 +188,7 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1)
   const { addItem } = useCart()
   const { toast } = useToast()
-  const [uploading, setUploading] = useState(false)
-  const [uploadedUrl, setUploadedUrl] = useState("")
-  const [webhookStatus, setWebhookStatus] = useState("")
-  const [error, setError] = useState("")
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const [tryOnLoading, setTryOnLoading] = useState(false)
+
 
   const handleAddToCart = () => {
     if (!selectedSize) {

@@ -60,7 +60,7 @@ export default function TryOnPage() {
         throw new Error(`Upload failed: ${res.status}`)
       }
       const data = (await res.json()) as { url?: string; error?: string }
-      console.log('Upload response:', data);
+      // console.log('Upload response:', data);
       const imageUrl = data.url
       if (!imageUrl) {
         throw new Error(data.error || "No URL returned from upload")
@@ -132,6 +132,7 @@ export default function TryOnPage() {
       if (!webhookRes.ok) {
         throw new Error(`Webhook failed: ${webhookRes.status}`)
       }
+
 
       // Parse the response from n8n
       const responseData = await webhookRes.json()
@@ -420,7 +421,7 @@ export default function TryOnPage() {
             {error && <div className="mt-2 text-red-600 text-xs">Error: {error}</div>}
             
             {/* Webhook Response Details */}
-            {webhookResponse && (
+            {/* {webhookResponse && (
               <Card className="mt-4">
                 <CardContent className="p-4">
                   <h4 className="font-medium mb-2">Webhook Response:</h4>
@@ -429,7 +430,7 @@ export default function TryOnPage() {
                   </div>
                 </CardContent>
               </Card>
-            )}
+            )} */}
           </div>
 
           {/* Right Side - Try-On Result */}
@@ -455,7 +456,7 @@ export default function TryOnPage() {
                 <div className="aspect-[4/5] bg-gray-100 rounded-lg flex items-center justify-center">
                   {tryOnResult ? (
                     <img
-                      src={tryOnResult}
+                      src={webhookResponse.output}
                       alt="Try-on result"
                       className="w-full h-full object-cover rounded-lg"
                     />
