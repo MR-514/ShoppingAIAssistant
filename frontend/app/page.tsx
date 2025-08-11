@@ -4,9 +4,11 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Search, Sparkles, Camera, ShoppingBag } from "lucide-react"
+import ImageUpload from "./components/ImageUpload";
 
 export default function HomePage() {
   const featuredProducts = [
+    
     {
       id: 1,
       name: "Classic Jacket",
@@ -59,6 +61,7 @@ export default function HomePage() {
       colors: ["Red", "black", "Green"],
       sizes: ["XS", "S", "M", "L", "XL", "XXL"],
     },
+    
   ]
 
   return (
@@ -124,6 +127,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Image Upload Section */}
+      {/* <ImageUpload /> */}
 
       {/* Featured Products */}
       <section className="py-16">

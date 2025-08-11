@@ -17,6 +17,7 @@ interface Product {
   image: string
   category: string
   brand: string
+  garment_type: string
   rating: number
   reviews: number
   colors: string[]
@@ -26,6 +27,7 @@ interface Product {
 }
 
 const products: Product[] = [
+  
   {
     id: 1,
     name: "Classic Jacket",
@@ -39,6 +41,7 @@ const products: Product[] = [
     colors: ["Red", "Black", "White"],
     sizes: ["XS", "S", "M", "L", "XL"],
     isSale: true,
+    garment_type: "upper_body",
   },
   {
     id: 7,
@@ -53,6 +56,7 @@ const products: Product[] = [
     colors: ["Floral", "Black", "Gray"],
     sizes: ["XS", "S", "M", "L", "XL"],
     isSale: true,
+    garment_type: "upper_body",
   },
   {
     id: 4,
@@ -65,6 +69,7 @@ const products: Product[] = [
     reviews: 45,
     colors: ["Brown", "Black", "Tan"],
     sizes: ["One Size"],
+    garment_type: "upper_body",
   },
   {
     id: 5,
@@ -77,6 +82,7 @@ const products: Product[] = [
     reviews: 312,
     colors: ["Red", "black", "Green"],
     sizes: ["XS", "S", "M", "L", "XL", "XXL"],
+    garment_type: "upper_body",
   },
   {
     id: 8,
@@ -90,6 +96,7 @@ const products: Product[] = [
     colors: ["Black", "White", "Blue"],
     sizes: ["28", "30", "32"],
     isNew: true,
+    garment_type: "upper_body",
   },
   {
     id: 6,
@@ -102,6 +109,7 @@ const products: Product[] = [
     reviews: 178,
     colors: ["Blue", "Black", "Light Blue"],
     sizes: ["XS", "S", "M", "L", "XL", "XXL"],
+    garment_type: "upper_body",
   },
   {
     id: 9,
@@ -116,6 +124,7 @@ const products: Product[] = [
     colors: ["Black", "Black", "Gray"],
     sizes: ["28", "30", "32"],
     isSale: true,
+    garment_type: "upper_body",
   },
 
   {
@@ -130,6 +139,7 @@ const products: Product[] = [
     colors: ["Black", "White", "Blue"],
     sizes: ["28", "30", "32"],
     isNew: true,
+    garment_type: "upper_body",
   },
   {
     id: 10,
@@ -143,6 +153,7 @@ const products: Product[] = [
     colors: ["White", "Blue"],
     sizes: ["28", "30", "32"],
     isNew: true,
+    garment_type: "upper_body",
   },
   {
     id: 3,
@@ -155,7 +166,9 @@ const products: Product[] = [
     reviews: 256,
     colors: ["White", "Black", "Gray"],
     sizes: ["XS", "S", "M", "L", "XL"],
+    garment_type: "upper_body",
   },
+  
 ]
 
 export default function ProductsPage() {

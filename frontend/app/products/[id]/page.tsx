@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Heart, ShoppingCart, Share2, Truck, Shield, RotateCcw, Star } from "lucide-react"
+import { ShoppingCart, Star } from "lucide-react"
 import { useCart } from "@/components/cart-provider"
 import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
@@ -189,6 +189,7 @@ export default function ProductDetailPage() {
   const { addItem } = useCart()
   const { toast } = useToast()
 
+
   const handleAddToCart = () => {
     if (!selectedSize) {
       toast({
@@ -213,6 +214,8 @@ export default function ProductDetailPage() {
       description: `${product.name} has been added to your cart.`,
     })
   }
+
+
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -266,6 +269,8 @@ export default function ProductDetailPage() {
               )}
             </div>
           </div>
+
+
 
           {/* Color Selection */}
           <div>
@@ -325,6 +330,11 @@ export default function ProductDetailPage() {
             <ShoppingCart className="mr-2 h-5 w-5" />
             Add to Cart
           </Button>
+          <Link href="/try-on" className="block">
+              <Button variant="outline" className="w-full bg-transparent">
+                Try On Virtually
+              </Button>
+            </Link>
 
           {/* Description & Features */}
           <Tabs defaultValue="description" className="mt-10">
