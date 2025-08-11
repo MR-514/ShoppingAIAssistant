@@ -1,0 +1,137 @@
+"use client"
+
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Search, Sparkles, Camera, ShoppingBag } from "lucide-react"
+
+export default function HomePage() {
+  const featuredProducts = [
+    {
+      id: 1,
+      name: "Classic Denim Jacket",
+      price: 89.99,
+      image: "/placeholder.svg?height=300&width=250",
+      category: "Jackets",
+    },
+    {
+      id: 2,
+      name: "Floral Summer Dress",
+      price: 65.99,
+      image: "/placeholder.svg?height=300&width=250",
+      category: "Dresses",
+    },
+    {
+      id: 3,
+      name: "Casual White Sneakers",
+      price: 79.99,
+      image: "/placeholder.svg?height=300&width=250",
+      category: "Shoes",
+    },
+    {
+      id: 4,
+      name: "Leather Crossbody Bag",
+      price: 120.0,
+      image: "/placeholder.svg?height=300&width=250",
+      category: "Accessories",
+    },
+  ]
+
+  return (
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <section className="relative bg-gradient-to-r from-purple-600 to-pink-600 text-white py-20">
+        <div className="container mx-auto px-4 text-center">
+          <h1 className="text-5xl font-bold mb-6">AI-Powered Fashion Discovery</h1>
+          <p className="text-xl mb-8 max-w-2xl mx-auto">
+            Find your perfect style with our intelligent fashion assistant. Search with AI, try on virtually, and
+            discover clothes that match your unique taste.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/products">
+              <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-100">
+                <ShoppingBag className="mr-2 h-5 w-5" />
+                Shop Now
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* AI Features */}
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12">AI-Powered Features</h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            <Card className="text-center p-6">
+              <CardContent className="pt-6">
+                <Search className="h-12 w-12 text-purple-600 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold mb-2">Smart Search</h3>
+                <p className="text-gray-600 mb-4">
+                  Describe what you're looking for in natural language and let our AI find the perfect matches.
+                </p>
+                <p className="text-sm text-purple-600 font-medium">Click "AI Search" in the header to get started!</p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center p-6">
+              <CardContent className="pt-6">
+                <Camera className="h-12 w-12 text-purple-600 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold mb-2">Image Analysis</h3>
+                <p className="text-gray-600 mb-4">
+                  Upload photos of outfits you like and get similar product recommendations instantly.
+                </p>
+                <p className="text-sm text-purple-600 font-medium">Use the camera icon in AI chat to upload images!</p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center p-6">
+              <CardContent className="pt-6">
+                <Sparkles className="h-12 w-12 text-purple-600 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold mb-2">Virtual Try-On</h3>
+                <p className="text-gray-600 mb-4">
+                  See how clothes look on you before buying with our virtual try-on technology.
+                </p>
+                <Link href="/try-on">
+                  <Button variant="outline">Try Virtual Fitting</Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Products */}
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12">Featured Products</h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {featuredProducts.map((product) => (
+              <Card key={product.id} className="group cursor-pointer hover:shadow-lg transition-shadow">
+                <CardContent className="p-0">
+                  <div className="aspect-[4/5] overflow-hidden rounded-t-lg">
+                    <img
+                      src={product.image || "/placeholder.svg"}
+                      alt={product.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  <div className="p-4">
+                    <p className="text-sm text-gray-500 mb-1">{product.category}</p>
+                    <h3 className="font-semibold mb-2">{product.name}</h3>
+                    <p className="text-lg font-bold text-purple-600">${product.price}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <div className="text-center mt-8">
+            <Link href="/products">
+              <Button size="lg">View All Products</Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+    </div>
+  )
+}
