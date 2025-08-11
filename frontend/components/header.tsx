@@ -31,7 +31,7 @@ export function Header({ onOpenChat }: HeaderProps) {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <Sparkles className="h-6 w-6 text-purple-600" />
-            <span className="text-xl font-bold">AI Fashion</span>
+            <span className="text-xl font-bold">StyleSphere</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -59,7 +59,7 @@ export function Header({ onOpenChat }: HeaderProps) {
           <div className="flex items-center space-x-4">
             <Button variant="outline" size="sm" onClick={onOpenChat}>
               <Sparkles className="h-4 w-4 mr-2" />
-              AI Search
+              Search with Monica
             </Button>
 
             <Button variant="ghost" size="sm">

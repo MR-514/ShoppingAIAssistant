@@ -247,12 +247,12 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
   if (!isOpen) return null
 
   return (
-    <div className="w-80 bg-white border-l shadow-lg flex flex-col h-full">
+    <div className="w-[400px] bg-white border-l shadow-lg flex flex-col h-full">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b bg-purple-50 flex-shrink-0">
         <div className="flex items-center gap-2">
           <MessageCircle className="h-5 w-5 text-purple-600" />
-          <h3 className="font-semibold">AI Fashion Assistant</h3>
+          <h3 className="font-semibold">Monica</h3>
         </div>
         <Button variant="ghost" size="sm" onClick={onClose} className="h-8 w-8 p-0">
           <X className="h-4 w-4" />
@@ -266,7 +266,7 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
             {messages.length === 0 && (
               <div className="text-center text-gray-500 py-8">
                 <Sparkles className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                <p className="text-sm">Hi! I'm your AI fashion assistant.</p>
+                <p className="text-sm">Hey👋 I'm Monica, your fashion assistant.</p>
                 <p className="text-sm">Ask me anything about fashion or describe what you're looking for!</p>
               </div>
             )}

@@ -94,7 +94,7 @@ export default function HomePage() {
                 <p className="text-gray-600 mb-4">
                   Describe what you're looking for in natural language and let our AI find the perfect matches.
                 </p>
-                <p className="text-sm text-purple-600 font-medium">Click "AI Search" in the header to get started!</p>
+                <p className="text-sm text-purple-600 font-medium">Click "Search with Monica" in the header to get started!</p>
               </CardContent>
             </Card>
 

@@ -9,7 +9,7 @@ export function Footer() {
           <div>
             <Link href="/" className="flex items-center space-x-2 mb-4">
               <Sparkles className="h-6 w-6 text-purple-400" />
-              <span className="text-xl font-bold">AI Fashion</span>
+              <span className="text-xl font-bold">StyleSphere</span>
             </Link>
             <p className="text-gray-400">Discover fashion with AI-powered search and virtual try-on technology.</p>
           </div>
