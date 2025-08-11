@@ -1,3 +1,4 @@
 .env*
 google_search_agent/__pycache__
 __pycache__
+cloud_run_deploy.sh

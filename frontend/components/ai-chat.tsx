@@ -67,7 +67,8 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
   const [eventSource, setEventSource] = useState<EventSource | null>(null);
 
 
-  const backendUrl = `http://127.0.0.1:8000`;
+  // const backendUrl = `http://127.0.0.1:8000`;
+  const backendUrl = `https://backend-service1-68708940504.us-central1.run.app`;
   const sse_url = `${backendUrl}/events/${sessionId}`;
   const send_url = `${backendUrl}/send/${sessionId}`;
   let is_audio = false;
