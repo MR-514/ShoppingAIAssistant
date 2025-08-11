@@ -10,6 +10,7 @@ import { Heart, ShoppingCart, Share2, Truck, Shield, RotateCcw, Star } from "luc
 import { useCart } from "@/components/cart-provider"
 import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
+import { useRef } from "react"
 
 // Mock product data - in real app, this would come from API
 const product = {
@@ -76,6 +77,12 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1)
   const { addItem } = useCart()
   const { toast } = useToast()
+  const [uploading, setUploading] = useState(false)
+  const [uploadedUrl, setUploadedUrl] = useState("")
+  const [webhookStatus, setWebhookStatus] = useState("")
+  const [error, setError] = useState("")
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [tryOnLoading, setTryOnLoading] = useState(false)
 
   const handleAddToCart = () => {
     if (!selectedSize) {
@@ -100,6 +107,39 @@ export default function ProductDetailPage() {
       title: "Added to cart!",
       description: `${product.name} has been added to your cart.`,
     })
+  }
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+    setError("")
+    setWebhookStatus("")
+    setUploadedUrl("")
+    const form = new FormData()
+    form.append("file", file)
+    try {
+      const res = await fetch("http://localhost:8080/upload-image", { method: "POST", body: form })
+      const data = await res.json()
+      if (!data.url) throw new Error(data.error || "No Cloudinary URL returned")
+      setUploadedUrl(data.url)
+      // Send to webhook
+      const webhookRes = await fetch("http://localhost:5678/webhook-test/Virtual-Try-On", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          image_url: data.url,
+          garment_type: product.garment_type,
+        }),
+      })
+      console.log("reply from webhook",webhookRes)
+      if (!webhookRes.ok) throw new Error("Webhook failed")
+      setWebhookStatus("Webhook sent successfully!")
+    } catch (err: any) {
+      setError(err.message || "Upload failed")
+    } finally {
+      setUploading(false)
+    }
   }
 
   return (
@@ -172,6 +212,61 @@ export default function ProductDetailPage() {
                 <Badge className="bg-red-500">Save ${(product.originalPrice! - product.price).toFixed(2)}</Badge>
               )}
             </div>
+          </div>
+
+          {/* Image Upload for Virtual Try-On */}
+          <div className="my-6 p-4 border rounded-lg bg-gray-50">
+            <h3 className="font-semibold mb-2">Virtual Try-On</h3>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageUpload}
+            />
+            <Button
+              variant="outline"
+              className="mb-2"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+            >
+              {uploading ? "Uploading..." : "Upload Your Photo"}
+            </Button>
+            {uploadedUrl && (
+              <div className="mt-2 text-xs break-all text-blue-700">
+                <span>Image URL: </span>
+                <a href={uploadedUrl} target="_blank" rel="noopener noreferrer" className="underline">{uploadedUrl}</a>
+              </div>
+            )}
+            <Button
+              className="mt-4"
+              disabled={!uploadedUrl || tryOnLoading}
+              onClick={async () => {
+                setTryOnLoading(true)
+                setWebhookStatus("")
+                setError("")
+                try {
+                  const webhookRes = await fetch("http://localhost:5678/webhook-test/Virtual-Try-On", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      image_url: uploadedUrl,
+                      garment_type: product.garment_type,
+                    }),
+                  })
+                  if (!webhookRes.ok) throw new Error("Webhook failed")
+                  setWebhookStatus("Webhook sent successfully!")
+                } catch (err: any) {
+                  setError(err.message || "Webhook failed")
+                } finally {
+                  setTryOnLoading(false)
+                }
+              }}
+            >
+              {tryOnLoading ? "Sending to Try-On..." : "Try On"}
+            </Button>
+            {webhookStatus && <div className="mt-2 text-green-600 text-xs">{webhookStatus}</div>}
+            {error && <div className="mt-2 text-red-600 text-xs">Error: {error}</div>}
           </div>
 
           {/* Color Selection */}

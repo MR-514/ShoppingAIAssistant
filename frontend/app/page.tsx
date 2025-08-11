@@ -4,37 +4,28 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Search, Sparkles, Camera, ShoppingBag } from "lucide-react"
+import ImageUpload from "./components/ImageUpload";
 
 export default function HomePage() {
   const featuredProducts = [
+    
     {
       id: 1,
-      name: "Classic Denim Jacket",
-      price: 89.99,
-      image: "/placeholder.svg?height=300&width=250",
-      category: "Jackets",
+      name: "Floral Summer pant",
+      price: 65.99,
+      image: "https://res.cloudinary.com/dqhry9ysg/image/upload/v1754907984/r95xqygW_908f4b3bf54842f7875feb024d8d28b2_lks7dh.webp",
+      category: "Dresses",
+      garment_type: "lower_body",
     },
     {
       id: 2,
-      name: "Floral Summer Dress",
-      price: 65.99,
-      image: "/placeholder.svg?height=300&width=250",
-      category: "Dresses",
-    },
-    {
-      id: 3,
-      name: "Casual White Sneakers",
+      name: "White Kurtha",
       price: 79.99,
-      image: "/placeholder.svg?height=300&width=250",
-      category: "Shoes",
+      image: "https://res.cloudinary.com/dqhry9ysg/image/upload/v1754907984/7l7oKg5A_04ea01c32d3543b89ae4280d67e283e0_x791cu.webp",
+      garment_type: "upper_body",
+      category: "Tops",
     },
-    {
-      id: 4,
-      name: "Leather Crossbody Bag",
-      price: 120.0,
-      image: "/placeholder.svg?height=300&width=250",
-      category: "Accessories",
-    },
+    
   ]
 
   return (
@@ -100,6 +91,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Image Upload Section */}
+      <ImageUpload />
 
       {/* Featured Products */}
       <section className="py-16">

@@ -17,6 +17,7 @@ interface Product {
   image: string
   category: string
   brand: string
+  garment_type: string
   rating: number
   reviews: number
   colors: string[]
@@ -26,25 +27,12 @@ interface Product {
 }
 
 const products: Product[] = [
+  
   {
     id: 1,
-    name: "Classic Denim Jacket",
-    price: 89.99,
-    originalPrice: 120.0,
-    image: "/placeholder.svg?height=400&width=300",
-    category: "Jackets",
-    brand: "Urban Style",
-    rating: 4.5,
-    reviews: 128,
-    colors: ["Blue", "Black", "White"],
-    sizes: ["XS", "S", "M", "L", "XL"],
-    isSale: true,
-  },
-  {
-    id: 2,
-    name: "Floral Summer Dress",
+    name: "Floral Summer pant",
     price: 65.99,
-    image: "/placeholder.svg?height=400&width=300",
+    image: "https://res.cloudinary.com/dqhry9ysg/image/upload/v1754907984/r95xqygW_908f4b3bf54842f7875feb024d8d28b2_lks7dh.webp",
     category: "Dresses",
     brand: "Bloom & Co",
     rating: 4.8,
@@ -52,18 +40,20 @@ const products: Product[] = [
     colors: ["Pink", "Blue", "Yellow"],
     sizes: ["XS", "S", "M", "L"],
     isNew: true,
+    garment_type: "lower_body",
   },
   {
     id: 3,
-    name: "Casual White Sneakers",
+    name: "White Kurtha",
     price: 79.99,
-    image: "/placeholder.svg?height=400&width=300",
-    category: "Shoes",
+    image: "https://res.cloudinary.com/dqhry9ysg/image/upload/v1754907984/7l7oKg5A_04ea01c32d3543b89ae4280d67e283e0_x791cu.webp",
+    category: "Tops",
     brand: "ComfortStep",
     rating: 4.3,
     reviews: 256,
     colors: ["White", "Black", "Gray"],
     sizes: ["6", "7", "8", "9", "10", "11"],
+    garment_type: "upper_body",
   },
   {
     id: 4,
@@ -76,6 +66,7 @@ const products: Product[] = [
     reviews: 45,
     colors: ["Brown", "Black", "Tan"],
     sizes: ["One Size"],
+    garment_type: "upper_body",
   },
   {
     id: 5,
@@ -88,6 +79,7 @@ const products: Product[] = [
     reviews: 312,
     colors: ["Navy", "Red", "Green"],
     sizes: ["XS", "S", "M", "L", "XL", "XXL"],
+    garment_type: "upper_body",
   },
   {
     id: 6,
@@ -100,6 +92,7 @@ const products: Product[] = [
     reviews: 178,
     colors: ["Blue", "Black", "Light Blue"],
     sizes: ["24", "26", "28", "30", "32", "34"],
+    garment_type: "upper_body",
   },
   {
     id: 7,
@@ -113,6 +106,7 @@ const products: Product[] = [
     reviews: 67,
     colors: ["Camel", "Black", "Gray"],
     sizes: ["XS", "S", "M", "L", "XL"],
+    garment_type: "upper_body",
     isSale: true,
   },
   {
@@ -127,6 +121,7 @@ const products: Product[] = [
     colors: ["Black", "White", "Blue"],
     sizes: ["6", "7", "8", "9", "10", "11", "12"],
     isNew: true,
+    garment_type: "upper_body",
   },
 ]
 

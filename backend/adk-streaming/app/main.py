@@ -30,12 +30,15 @@ from google.adk.runners import InMemoryRunner
 from google.adk.agents import LiveRequestQueue
 from google.adk.agents.run_config import RunConfig
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, UploadFile, File
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from google_search_agent.agent import root_agent
+
+import cloudinary
+import cloudinary.uploader
 
 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
 
@@ -122,10 +125,10 @@ async def agent_to_client_sse(live_events):
             yield f"data: {json.dumps(message)}\n\n"
             print(f"[AGENT TO CLIENT]: text/plain: {message}")
 
-
 #
 # FastAPI web app
 #
+
 
 app = FastAPI()
 
@@ -151,7 +154,7 @@ async def root():
 
 
 @app.get("/events/{user_id}")
-async def sse_endpoint(user_id: int, is_audio: str = "false"):
+async def sse_endpoint(user_id: int, is_audio: str="false"):
     """SSE endpoint for agent to client communication"""
 
     # Start agent session
@@ -220,3 +223,20 @@ async def send_message_endpoint(user_id: int, request: Request):
         return {"error": f"Mime type not supported: {mime_type}"}
 
     return {"status": "sent"}
+
+
+# Remove dotenv and .env usage for Cloudinary
+cloudinary.config(
+    cloud_name="dey82irvx",
+    api_key="147693666838559",
+    api_secret="1yzxGknWZ_NN5p42bZ0R282RQTQ"
+)
+
+
+@app.post("/upload-image")
+async def upload_image(file: UploadFile=File(...)):
+    try:
+        result = cloudinary.uploader.upload(file.file, folder="jeevan")
+        return {"url": result["secure_url"]}
+    except Exception as e:
+        return {"error": str(e)}

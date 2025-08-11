@@ -1,1 +1,4 @@
 google-adk==1.2.1
+cloudinary
+python-multipart
+python-dotenv
