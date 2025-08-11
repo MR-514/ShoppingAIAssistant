@@ -11,19 +11,55 @@ export default function HomePage() {
     
     {
       id: 1,
-      name: "Floral Summer pant",
-      price: 65.99,
-      image: "https://res.cloudinary.com/dqhry9ysg/image/upload/v1754907984/r95xqygW_908f4b3bf54842f7875feb024d8d28b2_lks7dh.webp",
-      category: "Dresses",
-      garment_type: "lower_body",
+      name: "Classic Jacket",
+      price: 89.99,
+      originalPrice: 120.0,
+      image: "https://res.cloudinary.com/dqhry9ysg/image/upload/v1754906657/Large_PNG-AdobeStock_328526349_ve8zsc.png",
+      category: "Jackets",
+      brand: "Winter Warmth",
+      rating: 4.5,
+      reviews: 128,
+      colors: ["Red", "Black", "White"],
+      sizes: ["XS", "S", "M", "L", "XL"],
+      isSale: true,
     },
     {
-      id: 2,
-      name: "White Kurtha",
-      price: 79.99,
-      image: "https://res.cloudinary.com/dqhry9ysg/image/upload/v1754907984/7l7oKg5A_04ea01c32d3543b89ae4280d67e283e0_x791cu.webp",
-      garment_type: "upper_body",
-      category: "Tops",
+      id: 7,
+      name: "Floral Long Skirt",
+      price: 189.99,
+      originalPrice: 250.0,
+      image: "https://res.cloudinary.com/dqhry9ysg/image/upload/v1754907984/FqIpmjbq_b302522366804128ab739d0ec76de21c_es9jhl.webp",
+      category: "Bottoms",
+      brand: "Urban Style",
+      rating: 4.9,
+      reviews: 67,
+      colors: ["Floral", "Black", "Gray"],
+      sizes: ["XS", "S", "M", "L", "XL"],
+      isSale: true,
+    },
+    {
+      id: 4,
+      name: "Stripped Full Sleve Tee",
+      price: 120.0,
+      image: "https://res.cloudinary.com/dqhry9ysg/image/upload/v1754907984/Q2rggAyB_3b0cab885126474fbfa92ef39c9a71f3_t1p7um.webp",
+      category: "Top",
+      brand: "Luxe Leather",
+      rating: 4.7,
+      reviews: 45,
+      colors: ["Brown", "Black", "Tan"],
+      sizes: ["One Size"],
+    },
+    {
+      id: 5,
+      name: "Cotton T-Shirt",
+      price: 29.99,
+      image: "https://res.cloudinary.com/dqhry9ysg/image/upload/v1754908235/9WXS83ig_09605e25e9ee4e7abe0c5dacca407897_gwbftr.webp",
+      category: "Top",
+      brand: "Basic Essentials",
+      rating: 4.2,
+      reviews: 312,
+      colors: ["Red", "black", "Green"],
+      sizes: ["XS", "S", "M", "L", "XL", "XXL"],
     },
     
   ]
@@ -61,7 +97,7 @@ export default function HomePage() {
                 <p className="text-gray-600 mb-4">
                   Describe what you're looking for in natural language and let our AI find the perfect matches.
                 </p>
-                <p className="text-sm text-purple-600 font-medium">Click "AI Search" in the header to get started!</p>
+                <p className="text-sm text-purple-600 font-medium">Click "Search with Monica" in the header to get started!</p>
               </CardContent>
             </Card>
 
@@ -93,7 +129,7 @@ export default function HomePage() {
       </section>
 
       {/* Image Upload Section */}
-      <ImageUpload />
+      {/* <ImageUpload /> */}
 
       {/* Featured Products */}
       <section className="py-16">

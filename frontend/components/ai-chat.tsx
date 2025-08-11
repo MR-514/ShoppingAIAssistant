@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Sparkles, Loader2, MessageCircle, X, Send, Camera, Mic } from "lucide-react"
+import { Contrail_One } from "next/font/google"
 
 interface ChatMessage {
   id: string
@@ -67,7 +68,8 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
   const [eventSource, setEventSource] = useState<EventSource | null>(null);
 
 
-  const backendUrl = `http://127.0.0.1:8000`;
+  // const backendUrl = `http://127.0.0.1:8000`;
+  const backendUrl = `https://backend-service1-68708940504.us-central1.run.app`;
   const sse_url = `${backendUrl}/events/${sessionId}`;
   const send_url = `${backendUrl}/send/${sessionId}`;
   let is_audio = false;
@@ -103,19 +105,18 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
           setIsLoading(true);
 
           setMessages((prev) => {
-            const lastMsg = prev[prev.length - 1];
-            const shouldAppend =
-              lastMsg &&
-              lastMsg.role === "assistant" &&
-              lastAssistantMsgId.current &&   
-              lastMsg.id === lastAssistantMsgId.current;
-
-            if (shouldAppend) {
+            if (
+              prev.length > 0 &&
+              prev[prev.length - 1].role === (msg.role || "assistant") &&
+              prev[prev.length - 1].id === lastAssistantMsgId.current
+            ) {
               return [
                 ...prev.slice(0, -1),
                 {
-                  ...lastMsg,
-                  content: lastMsg.content + msg.data,
+                  ...prev[prev.length - 1],
+                  content:
+                    (prev[prev.length - 1].content || "") + msg.data,
+                  timestamp: new Date(),
                 },
               ];
             } else {
@@ -125,15 +126,15 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
                 ...prev,
                 {
                   id: newId,
-                  role: "assistant",
+                  role: msg.role || "assistant",
                   content: msg.data,
                   timestamp: new Date(),
-                  type: "text",
                 },
               ];
             }
           });
         }
+
 
         if (msg.turn_complete) {
           // End of assistant’s turn
@@ -158,6 +159,25 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
     setEventSource(es);
   };
 
+  const sendMessage = async (mime_type: string, data: string) => {
+    console.log("sending message", mime_type, data);
+    try {
+      const res = await fetch(send_url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mime_type, data }),
+      });
+      if (!res.ok) {
+        console.error("Failed to send message:", res.statusText);
+        return false;
+      }
+      return true;
+    } catch (error) {
+      console.error("Error sending message:", error);
+      return false;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
@@ -170,46 +190,41 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
     setInput(""); // clear input
     setIsLoading(true);
 
-    try {
-      const res = await fetch(send_url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mime_type: "text/plain", data: userMessage }),
-      });
-      console.log("res", res);
-      if (!res.ok) {
-        console.error("Failed to send message:", res.statusText);
-        setIsLoading(false);
-      }
-    } catch (error) {
-      console.error("Error sending message:", error);
-      setIsLoading(false);
+    const success = await sendMessage("text/plain", userMessage);
+
+    if (!success) {
+      // Handle failure if needed
     }
+
   };
 
 
   // sse connection end
 
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("handleImageUpload", e.target.files?.[0])
     const file = e.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        const imageUrl = e.target?.result as string
-        addMessage("user", imageUrl, "image")
-        addMessage("user", "I've uploaded an image. Can you help me find similar products?")
+    if (!file) return;
 
-        setTimeout(() => {
-          addMessage(
-            "assistant",
-            "I've analyzed your image! Based on the style and colors I can see, I can help you find similar products. Let me know what specific items you're interested in, and I'll guide you to the right products!",
-          )
-        }, 1500)
+    const reader = new FileReader();
+
+    reader.onload = async () => {
+      const base64Image = reader.result as string;
+      const base64Data = base64Image.split(",")[1];
+      console.log("base64Data", base64Data)
+
+      addMessage("user", base64Image, "image");
+
+      const success = await sendMessage(file.type, base64Data);
+
+      if (!success) {
+        // Handle failure if needed
       }
-      reader.readAsDataURL(file)
     }
-  }
+
+    reader.readAsDataURL(file);
+  };
 
   const handleVoiceInput = () => {
     if (!isRecording) {
@@ -232,12 +247,12 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
   if (!isOpen) return null
 
   return (
-    <div className="w-80 bg-white border-l shadow-lg flex flex-col h-full">
+    <div className="w-[400px] bg-white border-l shadow-lg flex flex-col h-full">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b bg-purple-50 flex-shrink-0">
         <div className="flex items-center gap-2">
           <MessageCircle className="h-5 w-5 text-purple-600" />
-          <h3 className="font-semibold">AI Fashion Assistant</h3>
+          <h3 className="font-semibold">Monica</h3>
         </div>
         <Button variant="ghost" size="sm" onClick={onClose} className="h-8 w-8 p-0">
           <X className="h-4 w-4" />
@@ -251,7 +266,7 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
             {messages.length === 0 && (
               <div className="text-center text-gray-500 py-8">
                 <Sparkles className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                <p className="text-sm">Hi! I'm your AI fashion assistant.</p>
+                <p className="text-sm">Hey👋 I'm Monica, your fashion assistant.</p>
                 <p className="text-sm">Ask me anything about fashion or describe what you're looking for!</p>
               </div>
             )}

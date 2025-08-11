@@ -25,7 +25,7 @@ export default function ClientLayout({
         <CartProvider>
           <div className="flex min-h-screen">
             {/* Main Content Area */}
-            <div className={`flex flex-col flex-1 transition-all duration-300 ${isChatOpen ? "mr-80" : ""}`}>
+            <div className={`flex flex-col flex-1 transition-all duration-300 ${isChatOpen ? "mr-[400px]" : ""}`}>
               <Header onOpenChat={() => setIsChatOpen(true)} />
               <main className="flex-1">{children}</main>
               <Footer />
