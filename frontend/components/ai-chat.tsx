@@ -1,13 +1,13 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Sparkles, Loader2, MessageCircle, X, Send, Camera, Mic } from "lucide-react"
-import { Contrail_One } from "next/font/google"
+import { startAudioPlayerWorklet } from "@/utils/audio/audio-player"
+import { startAudioRecorderWorklet } from "@/utils/audio/audio-recorder"
 
 interface ChatMessage {
   id: string
@@ -27,8 +27,34 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isRecording, setIsRecording] = useState(false)
+  const [isAudio, setIsAudio] = useState(false)
+
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const audioPlayerNode = useRef<any>(null)
+  const audioRecorderNode = useRef<any>(null)
+  const micStream = useRef<MediaStream | null>(null)
+  const bufferTimer = useRef<NodeJS.Timeout | null>(null)
+  const audioBuffer = useRef<Uint8Array[]>([])
+
+  const lastAssistantMsgId = useRef<string | null>(null)
+
+  // SSE state
+  const [eventSource, setEventSource] = useState<EventSource | null>(null)
+  const [sessionId] = useState(() => {
+    const saved = localStorage.getItem("chat_session_id")
+    if (saved) return saved
+    const newId = Math.random().toString().substring(10)
+    localStorage.setItem("chat_session_id", newId)
+    return newId
+  })
+
+  // Backend URLs
+  // const backendUrl = `http://127.0.0.1:8000`
+  const backendUrl = `https://backend-service1-68708940504.us-central1.run.app`
+  const sse_url = `${backendUrl}/events/${sessionId}`
+  const send_url = `${backendUrl}/send/${sessionId}`
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -37,6 +63,13 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
   useEffect(() => {
     scrollToBottom()
   }, [messages])
+
+  useEffect(() => {
+    connectSSE()
+    return () => {
+      if (eventSource) eventSource.close()
+    }
+  }, [isAudio]) // reconnect when mode changes
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInput(e.target.value)
@@ -50,61 +83,24 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
       timestamp: new Date(),
       type,
     }
-    setMessages((prev) => [...prev, newMessage])
+    setMessages(prev => [...prev, newMessage])
   }
 
-
-
-  // sse connection start
-
-  const [sessionId] = useState(() => {
-    const saved = localStorage.getItem("chat_session_id");
-    if (saved) return saved;
-    const newId = Math.random().toString().substring(10)
-    localStorage.setItem("chat_session_id", newId);
-    return newId;
-  });
-
-  const [eventSource, setEventSource] = useState<EventSource | null>(null);
-
-
-  // const backendUrl = `http://127.0.0.1:8000`;
-  const backendUrl = `https://backend-service1-68708940504.us-central1.run.app`;
-  const sse_url = `${backendUrl}/events/${sessionId}`;
-  const send_url = `${backendUrl}/send/${sessionId}`;
-  let is_audio = false;
-
-  const lastAssistantMsgId = useRef<string | null>(null);
-
-
-  useEffect(() => {
-    connectSSE();
-    // Cleanup on unmount
-    return () => {
-      if (eventSource) eventSource.close();
-    };
-  }, []);
-
+  // SSE Connection
   const connectSSE = () => {
-    if (eventSource) eventSource.close();
-    const es = new EventSource(`${sse_url}?is_audio=${is_audio}`);
-    if (process.env.NODE_ENV === "development") {
-      console.log("url ", `${sse_url}?is_audio=${is_audio}`)
-    }
-    es.onopen = () => {
-      console.log("Connection opened");
-    };
-
+    if (eventSource) eventSource.close()
+    const es = new EventSource(`${sse_url}?is_audio=${isAudio}`)
+    es.onopen = () => console.log("SSE connection opened (audio mode:", isAudio, ")")
 
     es.onmessage = (event) => {
       try {
-        const msg = JSON.parse(event.data);
-        console.log("[AGENT TO CLIENT]", msg);
+        const msg = JSON.parse(event.data)
+        console.log("[AGENT TO CLIENT]", msg)
 
+        // Text messages
         if (msg.mime_type === "text/plain") {
-          setIsLoading(true);
-
-          setMessages((prev) => {
+          setIsLoading(true)
+          setMessages(prev => {
             if (
               prev.length > 0 &&
               prev[prev.length - 1].role === (msg.role || "assistant") &&
@@ -112,136 +108,154 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
             ) {
               return [
                 ...prev.slice(0, -1),
-                {
-                  ...prev[prev.length - 1],
-                  content:
-                    (prev[prev.length - 1].content || "") + msg.data,
-                  timestamp: new Date(),
-                },
-              ];
+                { ...prev[prev.length - 1], content: (prev[prev.length - 1].content || "") + msg.data, timestamp: new Date() }
+              ]
             } else {
-              const newId = Date.now().toString();
-              lastAssistantMsgId.current = newId;
-              return [
-                ...prev,
-                {
-                  id: newId,
-                  role: msg.role || "assistant",
-                  content: msg.data,
-                  timestamp: new Date(),
-                },
-              ];
+              const newId = Date.now().toString()
+              lastAssistantMsgId.current = newId
+              return [...prev, { id: newId, role: msg.role || "assistant", content: msg.data, timestamp: new Date() }]
             }
-          });
+          })
         }
 
+        // Audio messages
+        if (msg.mime_type === "audio/pcm" && audioPlayerNode.current) {
+          const audioData = base64ToArrayBuffer(msg.data)
+          audioPlayerNode.current.port.postMessage(audioData)
+        }
 
         if (msg.turn_complete) {
-          // End of assistant’s turn
-          lastAssistantMsgId.current = null;
-          setIsLoading(false);
+          lastAssistantMsgId.current = null
+          setIsLoading(false)
         }
-
       } catch (err) {
-        console.error("Error parsing SSE message:", err);
-        console.warn("Invalid SSE message:", event.data);
+        console.error("Error parsing SSE message:", err)
       }
-    };
-
-
+    }
 
     es.onerror = () => {
-      console.log("error : Connection closed");
-      es.close();
-      setTimeout(connectSSE, 1000);
-    };
+      console.log("SSE error — reconnecting...")
+      es.close()
+      setTimeout(connectSSE, 1000)
+    }
 
-    setEventSource(es);
-  };
+    setEventSource(es)
+  }
 
   const sendMessage = async (mime_type: string, data: string) => {
-    console.log("sending message", mime_type, data);
     try {
       const res = await fetch(send_url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mime_type, data }),
-      });
+      })
       if (!res.ok) {
-        console.error("Failed to send message:", res.statusText);
-        return false;
+        console.error("Failed to send message:", res.statusText)
+        return false
       }
-      return true;
+      return true
     } catch (error) {
-      console.error("Error sending message:", error);
-      return false;
+      console.error("Error sending message:", error)
+      return false
     }
-  };
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading) return;
-
-    const userMessage = input.trim();
-
-    // Add user's message to UI immediately
-    addMessage("user", userMessage);
-
-    setInput(""); // clear input
-    setIsLoading(true);
-
-    const success = await sendMessage("text/plain", userMessage);
-
-    if (!success) {
-      // Handle failure if needed
-    }
-
-  };
-
-
-  // sse connection end
-
+    e.preventDefault()
+    if (!input.trim() || isLoading) return
+    const userMessage = input.trim()
+    addMessage("user", userMessage)
+    setInput("")
+    setIsLoading(true)
+    await sendMessage("text/plain", userMessage)
+  }
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log("handleImageUpload", e.target.files?.[0])
     const file = e.target.files?.[0]
-    if (!file) return;
-
-    const reader = new FileReader();
-
+    if (!file) return
+    const reader = new FileReader()
     reader.onload = async () => {
-      const base64Image = reader.result as string;
-      const base64Data = base64Image.split(",")[1];
-      console.log("base64Data", base64Data)
-
-      addMessage("user", base64Image, "image");
-
-      const success = await sendMessage(file.type, base64Data);
-
-      if (!success) {
-        // Handle failure if needed
-      }
+      const base64Image = reader.result as string
+      const base64Data = base64Image.split(",")[1]
+      addMessage("user", base64Image, "image")
+      await sendMessage(file.type, base64Data)
     }
+    reader.readAsDataURL(file)
+  }
 
-    reader.readAsDataURL(file);
-  };
+  // Audio handling
+  const startAudio = async () => {
+    const [playerNode] = await startAudioPlayerWorklet()
+    const [recorderNode, , stream] = await startAudioRecorderWorklet(handlePCM)
+    audioPlayerNode.current = playerNode
+    audioRecorderNode.current = recorderNode
+    if (stream instanceof MediaStream) {
+      micStream.current = stream
+    }
+  }
 
-  const handleVoiceInput = () => {
+  const stopAudio = () => {
+    if (micStream.current) {
+      micStream.current.getTracks().forEach(track => track.stop())
+      micStream.current = null
+    }
+    if (bufferTimer.current) {
+      clearInterval(bufferTimer.current)
+      bufferTimer.current = null
+    }
+    setIsRecording(false)
+  }
+
+  const handleVoiceInput = async () => {
     if (!isRecording) {
+      setIsAudio(true)
+      if (eventSource) eventSource.close()
+      await startAudio()
+      connectSSE()
       setIsRecording(true)
-      setTimeout(() => {
-        setIsRecording(false)
-        addMessage("user", "I'm looking for a casual summer outfit")
-        setTimeout(() => {
-          addMessage(
-            "assistant",
-            "Great! I'd love to help you find a casual summer outfit. Are you looking for something specific like dresses, shorts and tops, or maybe a complete coordinated set? What's your preferred style - bohemian, minimalist, or trendy?",
-          )
-        }, 1000)
-      }, 3000)
     } else {
-      setIsRecording(false)
+      stopAudio()
+      setIsAudio(false)
+      connectSSE()
     }
+  }
+
+  const handlePCM = (pcmData: ArrayBuffer) => {
+    audioBuffer.current.push(new Uint8Array(pcmData))
+    if (!bufferTimer.current) {
+      bufferTimer.current = setInterval(sendBufferedAudio, 200)
+    }
+  }
+
+  const sendBufferedAudio = () => {
+    if (audioBuffer.current.length === 0) return
+    const totalLength = audioBuffer.current.reduce((sum, chunk) => sum + chunk.length, 0)
+    const combinedBuffer = new Uint8Array(totalLength)
+    let offset = 0
+    for (const chunk of audioBuffer.current) {
+      combinedBuffer.set(chunk, offset)
+      offset += chunk.length
+    }
+    sendMessage("audio/pcm", arrayBufferToBase64(combinedBuffer.buffer))
+    audioBuffer.current = []
+  }
+
+  const arrayBufferToBase64 = (buffer: ArrayBuffer) => {
+    const bytes = new Uint8Array(buffer)
+    let binary = ""
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i])
+    }
+    return btoa(binary)
+  }
+
+  const base64ToArrayBuffer = (base64: string) => {
+    const binary = atob(base64)
+    const bytes = new Uint8Array(binary.length)
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i)
+    }
+    return bytes.buffer
   }
 
   if (!isOpen) return null
@@ -270,12 +284,10 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
                 <p className="text-sm">Ask me anything about fashion or describe what you're looking for!</p>
               </div>
             )}
-
             {messages.map((message) => (
               <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
                 <div
-                  className={`max-w-[85%] p-3 rounded-lg text-sm ${message.role === "user" ? "bg-purple-600 text-white" : "bg-gray-100 text-gray-800"
-                    }`}
+                  className={`max-w-[85%] p-3 rounded-lg text-sm ${message.role === "user" ? "bg-purple-600 text-white" : "bg-gray-100 text-gray-800"}`}
                 >
                   {message.type === "image" ? (
                     <img
@@ -289,14 +301,11 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
                 </div>
               </div>
             ))}
-
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-gray-100 p-3 rounded-lg text-sm">
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                    <span>AI is thinking...</span>
-                  </div>
+                <div className="bg-gray-100 p-3 rounded-lg text-sm flex items-center gap-2">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  <span>AI is thinking...</span>
                 </div>
               </div>
             )}
@@ -313,7 +322,7 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
               value={input}
               onChange={handleInputChange}
               placeholder="Ask about fashion, styles, or products..."
-              disabled={isLoading}
+              disabled={isLoading || isRecording}
               className="pr-20"
             />
             <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
@@ -326,7 +335,6 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
               >
                 <Camera className="h-4 w-4 text-gray-500" />
               </Button>
-
               <Button
                 type="button"
                 variant="ghost"
@@ -338,19 +346,16 @@ export function AIChat({ isOpen, onClose }: AIChatProps) {
               </Button>
             </div>
           </div>
-
           <Button type="submit" disabled={isLoading || (!input.trim() && !isRecording)} size="sm">
             {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           </Button>
         </form>
-
         <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
-
         {isRecording && (
           <div className="mt-2 text-center">
             <div className="inline-flex items-center gap-2 text-red-500 text-sm">
               <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-              Recording... Tap mic to stop
+              Listening... Tap mic to stop
             </div>
           </div>
         )}

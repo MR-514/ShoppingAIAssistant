@@ -55,7 +55,7 @@ export default function TryOnPage() {
     const form = new FormData()
     form.append("file", file)
     try {
-      const res = await fetch("http://localhost:8080/upload-image", { method: "POST", body: form })
+      const res = await fetch("https://backend-service1-68708940504.us-central1.run.app/upload-image", { method: "POST", body: form })
       if (!res.ok) {
         throw new Error(`Upload failed: ${res.status}`)
       }
@@ -123,7 +123,7 @@ export default function TryOnPage() {
       }
 
       // Send to n8n webhook and wait for response
-      const webhookRes = await fetch("http://localhost:5678/webhook-test/Virtual-Try-On", {
+      const webhookRes = await fetch("http://172.16.172.16:5678/webhook/Virtual-Try-On", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -456,7 +456,7 @@ export default function TryOnPage() {
                 <div className="aspect-[4/5] bg-gray-100 rounded-lg flex items-center justify-center">
                   {tryOnResult ? (
                     <img
-                      src={webhookResponse.output}
+                      src={webhookResponse?.output}
                       alt="Try-on result"
                       className="w-full h-full object-cover rounded-lg"
                     />
