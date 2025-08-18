@@ -123,7 +123,7 @@ export default function TryOnPage() {
       }
 
       // Send to n8n webhook and wait for response
-      const webhookRes = await fetch("http://172.16.172.16:5678/webhook/Virtual-Try-On", {
+      const webhookRes = await fetch("/api/webhook", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
